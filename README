@@ -50,7 +50,7 @@ xcache –d –c –p 6666 -P
 	The parameter –P means to change the xcache to a proxy which has a high priority.
 
 3.	Tell the proxy about the information of the xcache. Please run :
-xcache_monitor –S 127.0.0.1:20191["—SERVER=127.0.0.1:20190 10 —SERVER=127.0.0.1:20191 10"]
+xcache_monitor –S 127.0.0.1:6666["—SERVER=127.0.0.1:20190 10 —SERVER=127.0.0.1:20191 10"]
 	The format of command is like: 
 xcache_monitor –S proxy_ip:proxy_port["—SERVER=xcache_ip:xcache_port xcache_core"]
 4.	The xcache_core means the power of the database. The one which has bigger xcache_core would store more data than others.
