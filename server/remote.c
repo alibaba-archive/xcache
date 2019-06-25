@@ -468,7 +468,7 @@ int r_stats(char* host, int port, int full, int detal, int sleeptime, int block)
     if(full){
         printf("%s",value_got);
     }else{
-        printf"%s",strstr(value_got,"slab f_size"));
+        printf("%s",strstr(value_got,"slab f_size"));
     }
     free(header);
     free(res_header);
