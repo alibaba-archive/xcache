@@ -1,4 +1,4 @@
-ACHE
+XCACHE
 
 ## Introduction
 xcache is based on ccache. It can store the outputs of compile into remote servers.
