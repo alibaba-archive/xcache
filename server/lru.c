@@ -291,7 +291,7 @@ static void *lru_update_looper(void *arg __attribute__((unused))){
             stats_lock();
             g_stats.op_lru ++;
             stats_unlock();
-            usleep(1 * 1000 * 1000 * sleep_time);
+            sleep(sleep_time);
             
        }
     }
