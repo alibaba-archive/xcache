@@ -58,6 +58,39 @@ static int compar(const void * a, const void * b){
     return -1;
 }
 
+static void _server_sort() {
+#ifdef SERVER_DEBUG
+    uint32_t h = 0;
+    while(h < s_used){
+        LOG_I("before: %s:%d %d\n",slist[h].ip,slist[h].port,slist[h].weight);
+        ++ h;
+    }
+
+    uint32_t j = 0;
+    while(j < h_used){
+        LOG_I("hash[%-3d] = %u, s = %s:%d\n",j,hlist[j].hash,hlist[j].s->ip,hlist[j].s->port);
+        ++ j;
+    }
+#endif
+
+    qsort(hlist,h_used,sizeof(hash_s),compar);
+#ifdef SERVER_DEBUG
+    j = 0;
+    while(j < h_used){
+        LOG_I("sorted: hash[%-3d] = %u, s = %s:%d\n",j,hlist[j].hash,hlist[j].s->ip,hlist[j].s->port);
+        ++ j;
+    }
+
+    h = 0;
+    while(h < s_used){
+        LOG_I("after: %s:%d %d\n",slist[h].ip,slist[h].port,slist[h].weight);
+        ++ h;
+    }
+#endif
+
+}
+
+
 static void _server_add(char* ip, int port, int weight){
     assert(NULL != ip);
     assert(0 <= weight);
@@ -81,23 +114,13 @@ static void _server_add(char* ip, int port, int weight){
     
     uint32_t k = 0;
     while(k < s_used){
-        if((slist[k].port == port) && !memcmp(slist[k].ip,ip,strlen(slist[k].ip))){
+        if((slist[k].port == port) && !strcmp(slist[k].ip,ip)){
             LOG_E("the %s:%d is exsited\n",ip,port);
             return;
         }
         ++ k;
     }
-#ifdef SERVER_DEBUG
 
-    uint32_t h = 0;
-    uint32_t h_befort_count = 0;
-    uint32_t h_after_count = 0;
-    while(h < s_used){
-        LOG_I("before: %s:%d %d\n",slist[h].ip,slist[h].port,slist[h].weight);
-        ++ h;
-        ++ h_befort_count;
-    }
-#endif
     if(0 == weight) weight = 1;
     slist[s_used].ip = malloc(strlen(ip) + 1);
     memcpy(slist[s_used].ip,ip,strlen(ip));
@@ -110,6 +133,7 @@ static void _server_add(char* ip, int port, int weight){
     char* format = malloc(len);
     assert(NULL != format);
     while(i < weight){
+        memset(format, 0, len);
         snprintf(format,len,"%s:%d#%d",ip,port,i);
         #ifdef SERVER_DEBUG
         LOG_I("format = %s\n",format);
@@ -118,34 +142,10 @@ static void _server_add(char* ip, int port, int weight){
         hlist[h_used].hash = MurmurHash3_x86_32(format,len);
         hlist[h_used].s = &slist[s_used];
         h_used += 1;
-        memset(format, 0, len);
         ++ i;
     }
-#ifdef SERVER_DEBUG
-    uint32_t j = 0;
-    while(j < h_used){
-        LOG_I("hash[%-3d] = %u, s = %s:%d\n",j,hlist[j].hash,hlist[j].s->ip,hlist[j].s->port);
-        ++ j;
-    }
-#endif
-    qsort(hlist,h_used,sizeof(hash_s),compar);
-#ifdef SERVER_DEBUG
-    j = 0;
-    while(j < h_used){
-        LOG_I("sorted: hash[%-3d] = %u, s = %s:%d\n",j,hlist[j].hash,hlist[j].s->ip,hlist[j].s->port);
-        ++ j;
-    }
-#endif
+
     s_used ++;
-#ifdef SERVER_DEBUG
-        h = 0;
-        while(h < s_used){
-            LOG_I("after: %s:%d %d\n",slist[h].ip,slist[h].port,slist[h].weight);
-            ++ h;
-            h_after_count ++;
-        }
-        assert(h_after_count == (h_befort_count + 1));
-#endif
 
     free(format);
 }
@@ -235,6 +235,7 @@ void server_add(char* conf, int port, int weight){
         _server_add(_ip,atoi(_port),atoi(_weight));
         p = strchr(p,'=');
     }
+    _server_sort();
 }
 
 void server_get(uint32_t key, char* ip, int* port){
